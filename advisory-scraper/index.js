@@ -3,19 +3,27 @@ var fs = require('fs');
 var request = require('request');
 var async = require('async');
 
+// Markers contains list of all marker objects from advisory site
 var markers = require('./markers.json');
 
-
+// Counter keeps track of objects fetched
 var COUNTER = 0;
 
+// start here
 function main () {
   console.log('starting');
-  var markerIDs = getMarkerIDs();
 
-  //markerIDs = ['35709'];
+  // first get just the marker IDs from the raw marker data
+  var markerIDs = getMarkerIDs();
+  markerIDs = ['35709'];
+
+  // make a 'task' function for each markerID which will make an
+  // API request to fetch provider info for each markerID
   var tasks = makeFetchTasks(markerIDs);
 
 
+  // Execute 5 parallel API requests at a time
+  // until we've fetched everything
   var PARALLEL_LIMIT = 5;
   async.parallelLimit(
     tasks,
@@ -29,6 +37,7 @@ function main () {
 
 }
 
+// Write results in csv
 function writeResults (fillName, results) {
   fs.appendFileSync(fillName, 'providerID,lat,lon,providerName,state,zip,percentReAdmissionsAdjustmentFactor,reAdmissionsAdjustmentFactor,baseOperatingPayment,reAdmissionsPenalty\n');
   results.forEach(
@@ -52,6 +61,8 @@ function writeResults (fillName, results) {
   console.log('done writing output');
 }
 
+// Generates one fetch task for each marker ID
+// used by async in parallelLimit
 function makeFetchTasks (markerIDs) {
   var tasks = [];
   markerIDs.forEach(
@@ -73,8 +84,7 @@ function makeFetchTasks (markerIDs) {
   return tasks;
 }
 
-
-
+// Get array of marker IDs from raw marker object array
 function getMarkerIDs () {
   var markerIDs = [];
   markers.forEach(
@@ -85,8 +95,8 @@ function getMarkerIDs () {
   return markerIDs;
 }
 
-
-
+// Makes a request to fac.advisory API to fetch provider info
+// for one marker ID
 function getProviderInfo (markerID, callback) {
   var requestOptions = {
     method: 'POST',
