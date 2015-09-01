@@ -15,7 +15,7 @@ function main () {
 
   // first get just the marker IDs from the raw marker data
   var markerIDs = getMarkerIDs();
-  markerIDs = ['35709'];
+  //markerIDs = ['35709'];
 
   // make a 'task' function for each markerID which will make an
   // API request to fetch provider info for each markerID
